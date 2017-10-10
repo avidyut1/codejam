@@ -11,26 +11,53 @@ import java.math.*;
  **/
 public class GoSightSeeing {
     private static int ans = -1;
+    static long inf = (long)1e18 + 18;
     public static void main(String args[]) {
         try {
             InputReader in = new InputReader(System.in);
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(System.out));
             int tc = in.readInt();
             for (int t = 0; t < tc; t++) {
-                ans = -1;
                 int n = in.readInt();
                 int ts = in.readInt();
                 int tf = in.readInt();
-                int s[] = new int[n - 1];
-                int f[] = new int[n - 1];
-                int d[] = new int[n - 1];
-                for (int i = 0; i < n - 1; i++) {
+                int s[] = new int[n];
+                int f[] = new int[n];
+                int d[] = new int[n];
+                for (int i = 1; i < n; i++) {
                     s[i] = in.readInt();
                     f[i] = in.readInt();
                     d[i] = in.readInt();
                 }
-                recurse(n, 0, 0, 0, s, f, d, ts, tf);
-                out.write("Case #"+t+": "+Integer.toString(ans));
+                long dp[][] = new long[n + 1][n + 1];
+                for (int i = 0; i <= n; i++) {
+                    for (int j = 0; j <= n; j++) {
+                        dp[i][j] = inf;
+                    }
+                }
+                //dp[i][j] = Minimum time it takes to reach the ith city after sightseeing j cities
+                dp[1][0] = 0;
+                for (int i = 1; i < n; i++) {
+                    for (int j = 0; j < n; j++) {
+                        //if we have reached i th city after sight seeing j cities only then we can go to
+                        // i + 1 city with j
+                        if (dp[i][j] != inf) {
+                            dp[i + 1][j] = Math.min(dp[i + 1][j] , get(i , dp[i][j], s, f, d));
+                            dp[i + 1][j + 1] = Math.min(dp[i + 1][j + 1] , get(i , dp[i][j] + ts, s, f, d));
+                        }
+                    }
+                }
+                int ans = -1;
+                for (int i = 0; i < n; i++) {
+                    if (dp[n][i] <= tf) {
+                        ans = i;
+                    }
+                }
+                out.write("Case #"+(t + 1)+": ");
+                if (ans == -1)
+                    out.write("IMPOSSIBLE");
+                else
+                    out.write(Integer.toString(ans));
                 out.newLine();
             }
             out.close();
@@ -38,26 +65,18 @@ public class GoSightSeeing {
             e.printStackTrace();
         }
     }
-    private static void recurse(int n, int citiIndex, int time, int lans, int s[], int f[], int d[], int ts, int tf) {
-        if (citiIndex == n - 1) {
-            if (time <= tf) {
-                ans = Math.max(lans, ans);
-            }
-            return;
+    public static long get(int i, long cur, int s[], int f[], int d[]) {
+        if (cur >= inf){
+            return inf;
         }
-        int newTime = time + ts;
-        int x = (int)Math.ceil((double)((newTime) - s[citiIndex]) / (f[citiIndex]));
-        while (s[citiIndex] + (x * f[citiIndex]) < newTime) {
-            x++;
+        if (cur <= s[i]) {
+            return d[i] + s[i];
         }
-        newTime = s[citiIndex] + (x * f[citiIndex]) + d[citiIndex];
-        recurse(n, citiIndex + 1, newTime, lans + 1, s, f, d, ts, tf);
-        newTime = time;
-        x = (int)Math.ceil((double)(newTime) - s[citiIndex]) / (f[citiIndex]);
-        while (s[citiIndex] + (x * f[citiIndex]) < newTime) {
-            x++;
-        }
-        newTime = s[citiIndex] + (x * f[citiIndex]) + d[citiIndex];
-        recurse(n, citiIndex + 1, newTime, lans, s, f, d, ts, tf);
+        long extra = cur - s[i];
+        extra = (extra + f[i] - 1L) / f[i];
+        extra *= f[i];
+        cur = extra + s[i];
+        cur += d[i];
+        return cur;
     }
 }
