@@ -21,50 +21,57 @@ public class Xsquared {
                 for (int i = 0; i < n; i++) {
                     mat[i] = in.readLine().toCharArray();
                 }
-                int numR1 = 0;
-                int numC1 = 0;
-                int numR2 = 0;
-                int numC2 = 0;
-                int extra = 0;
+                Vector<Integer> row[] = new Vector[n];
+                Vector<Integer> col[] = new Vector[n];
                 for (int i = 0; i < n; i++) {
-                    int countX = 0;
+                    row[i] = new Vector<>();
+                    col[i] = new Vector<>();
+                }
+                for (int i = 0; i < n; i++) {
                     for (int j = 0; j < n; j++) {
                         if (mat[i][j] == 'X') {
-                            countX++;
+                            row[i].add(j);
+                            col[j].add(i);
                         }
                     }
-                    if (countX == 1) {
-                        numR1++;
-                    }
-                    else if (countX == 2){
-                        numR2++;
-                    }
-                    else {
-                        extra++;
-                    }
                 }
-                for (int i = 0; i < n; i++) {
-                    int countX = 0;
-                    for (int j = 0; j < n; j++) {
-                        if (mat[j][i] == 'X') {
-                            countX++;
+                boolean impos = false;
+                for (int r = 0; r < n; r++) {
+                    if (row[r].size() > 2 || row[r].size() == 0) {
+                        impos = true;
+                        break;
+                    }
+                    else if (row[r].size() == 1) {
+                        int c = row[r].get(0);
+                        if (col[c].size() != 1) {
+                            impos = true;
+                            break;
                         }
                     }
-                    if (countX == 1) {
-                        numC1++;
-                    }
-                    else if (countX == 2){
-                        numC2++;
-                    }
                     else {
-                        extra++;
+                        //checking same config of column
+                        int col1 = row[r].get(0);
+                        int col2 = row[r].get(1);
+                        if (col[col1].equals(col[col2])) {
+                            if (col[col1].size() == 2) {
+                                int or = col[col1].get(0);
+                                if (or == r) {
+                                    or = col[col1].get(1);
+                                }
+                                if (row[or].equals(row[r])) {
+                                    continue;
+                                }
+                            }
+                        }
+                        impos = true;
+                        break;
                     }
                 }
-                if (extra == 0 && numR1 == 1 && numC1 == 1 && numR2 == n - 1 && numC2 == n - 1) {
-                    out.write("Case #"+t+": POSSIBLE");
+                if (impos) {
+                    out.write("Case #"+(t)+": IMPOSSIBLE");
                 }
                 else {
-                    out.write("Case #"+t+": IMPOSSIBLE");
+                    out.write("Case #"+(t)+": POSSIBLE");
                 }
                 out.newLine();
             }
